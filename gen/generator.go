@@ -34,6 +34,11 @@ func (g *FileGenerator) WriteEmptyLine() {
 }
 
 func (g *FileGenerator) WriteImports(extra ...string) {
+
+	if len(g.imports)+len(extra) == 0 {
+		return
+	}
+
 	fmt.Fprintf(g.w, "\n")
 
 	if len(g.imports)+len(extra) == 1 {
@@ -56,7 +61,7 @@ func (g *FileGenerator) WriteImports(extra ...string) {
 		fmt.Fprintf(g.w, "\t%q\n", pkg)
 	}
 
-	if len(g.imports) == 1 {
+	if len(g.imports)+len(extra) == 1 {
 		fmt.Fprintf(g.w, "\n")
 	} else {
 		fmt.Fprintf(g.w, ")\n")

@@ -127,6 +127,7 @@ func generateImplTest(dst io.Writer, typeName, genTypeName, pkgName string, impo
 
 	out, err := format.Source(buf.Bytes())
 	if err != nil {
+		log.Print(err)
 		log.Fatal(buf.String())
 		return err
 	}
