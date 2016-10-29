@@ -127,8 +127,8 @@ func getFuncDefn(m *ast.Field) (*FuncDefn, []string, error) {
 		if arg.Name == "" {
 			arg.Name = fmt.Sprintf("arg%d", i)
 		}
-		if selector != "" {
-			selectors = append(selectors, selector)
+		if len(selector) != 0 {
+			selectors = append(selectors, selector...)
 		}
 		method.Params = append(method.Params, *arg)
 	}
@@ -142,8 +142,8 @@ func getFuncDefn(m *ast.Field) (*FuncDefn, []string, error) {
 			if arg.Name == "" {
 				arg.Name = fmt.Sprintf("out%d", i)
 			}
-			if selector != "" {
-				selectors = append(selectors, selector)
+			if len(selector) != 0 {
+				selectors = append(selectors, selector...)
 			}
 			method.Results = append(method.Results, *arg)
 		}
@@ -157,7 +157,7 @@ type ArgDefn struct {
 	Nullable bool
 }
 
-func getArgDefn(field *ast.Field) (*ArgDefn, string, error) {
+func getArgDefn(field *ast.Field) (*ArgDefn, []string, error) {
 	var name string
 	if len(field.Names) == 1 {
 		name = field.Names[0].Name
@@ -173,17 +173,24 @@ func getArgDefn(field *ast.Field) (*ArgDefn, string, error) {
 	}, selector, nil
 }
 
-func getTypeName(expr ast.Expr) (name, selector string, nullable bool, err error) {
+func getTypeName(expr ast.Expr) (name string, selector []string, nullable bool, err error) {
 	switch xt := expr.(type) {
 	case *ast.SelectorExpr:
-		pkgName, _, nullable, err := getTypeName(xt.X)
-		return pkgName + "." + xt.Sel.Name, pkgName, nullable, err
+		pkgName, pkgs, nullable, err := getTypeName(xt.X)
+		return pkgName + "." + xt.Sel.Name, append(pkgs, pkgName), nullable, err
 	case *ast.Ident:
-		return xt.Name, "", false, nil
+		return xt.Name, nil, false, nil
 	case *ast.StarExpr:
 		name, pkg, _, err := getTypeName(xt.X)
 		return "*" + name, pkg, true, err
+	case *ast.ArrayType:
+		name, pkg, _, err := getTypeName(xt.Elt)
+		return "[]" + name, pkg, true, err
+	case *ast.MapType:
+		keyName, keyPkg, _, err := getTypeName(xt.Key)
+		valName, valPkg, _, err := getTypeName(xt.Value)
+		return "map[" + keyName + "]" + valName, append(keyPkg, valPkg...), true, err
 	default:
-		return "", "", false, fmt.Errorf("not a valid ast expression: %T", expr)
+		return "", nil, false, fmt.Errorf("not a valid ast expression: %T", expr)
 	}
 }

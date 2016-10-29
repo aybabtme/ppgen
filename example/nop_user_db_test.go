@@ -7,7 +7,10 @@
 
 package example
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 func TestNopUserDB(t *testing.T) {
 	tests := []struct {
@@ -17,6 +20,7 @@ func TestNopUserDB(t *testing.T) {
 		{name: "Create", check: func(userdb UserDB) { userdb.Create("") }},
 		{name: "Get", check: func(userdb UserDB) { userdb.Get("") }},
 		{name: "Delete", check: func(userdb UserDB) { userdb.Delete(nil) }},
+		{name: "List", check: func(userdb UserDB) { userdb.List(func() (out context.Context) { return out }()) }},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

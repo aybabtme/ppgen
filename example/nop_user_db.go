@@ -7,11 +7,14 @@
 
 package example
 
+import "context"
+
 // NopUserDB returns a UserDB that does nothing.
 func NopUserDB() UserDB { return nopUserDB{} }
 
 type nopUserDB struct{}
 
-func (nopUserDB) Create(_ string) (out0 *User, out1 error)   { return out0, out1 }
-func (nopUserDB) Get(_ string) (u *User, ok bool, err error) { return u, ok, err }
-func (nopUserDB) Delete(_ *User) (out0 error)                { return out0 }
+func (nopUserDB) Create(_ string) (out0 *User, out1 error)         { return out0, out1 }
+func (nopUserDB) Get(_ string) (u *User, ok bool, err error)       { return u, ok, err }
+func (nopUserDB) Delete(_ *User) (out0 error)                      { return out0 }
+func (nopUserDB) List(_ context.Context) (out0 []User, out1 error) { return out0, out1 }
