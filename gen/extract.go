@@ -8,6 +8,7 @@ import (
 	"io"
 	"path"
 	"strconv"
+	"strings"
 )
 
 func FindIfaceDefn(src io.Reader, typeName string) (pkgName string, imports []*ast.ImportSpec, defn *IfaceDefn, err error) {
@@ -75,7 +76,7 @@ func FindIfaceDefn(src io.Reader, typeName string) (pkgName string, imports []*a
 
 type IfaceDefn struct {
 	Name    string
-	Methods []MethodDefn
+	Methods []*FuncDefn
 }
 
 func getIfaceDefn(ifaceSpec *ast.TypeSpec, ifaceType *ast.InterfaceType) (*IfaceDefn, []string, error) {
@@ -84,37 +85,47 @@ func getIfaceDefn(ifaceSpec *ast.TypeSpec, ifaceType *ast.InterfaceType) (*Iface
 	}
 	var imports []string
 	for _, m := range ifaceType.Methods.List {
-		method, imps, err := getMethodDefn(m)
+		method, imps, err := getFuncDefn(m)
 		if err != nil {
 			return nil, nil, err
 		}
+		method.ReceiverName = strings.ToLower(tgt.Name)
+		if len(method.ReceiverName) > 3 {
+			method.ReceiverName = method.ReceiverName[:3]
+		}
+		method.ReceiverType = tgt.Name
 		imports = append(imports, imps...)
-		tgt.Methods = append(tgt.Methods, *method)
+		tgt.Methods = append(tgt.Methods, method)
 	}
 	return tgt, imports, nil
 }
 
-type MethodDefn struct {
-	Doc     string
-	Name    string
-	Params  []ArgDefn
-	Results []ArgDefn
+type FuncDefn struct {
+	Doc, Name    string
+	ReceiverName string
+	ReceiverType string
+	Params       []ArgDefn
+	Results      []ArgDefn
 }
 
-func getMethodDefn(m *ast.Field) (*MethodDefn, []string, error) {
+func getFuncDefn(m *ast.Field) (*FuncDefn, []string, error) {
 	fnType, ok := m.Type.(*ast.FuncType)
 	if !ok {
 		return nil, nil, fmt.Errorf("type %s is not a function", m.Names[0].Name)
 	}
-	method := &MethodDefn{
+	method := &FuncDefn{
 		Doc:  m.Doc.Text(),
 		Name: m.Names[0].Name,
 	}
 	var selectors []string
-	for _, param := range fnType.Params.List {
+	for i, param := range fnType.Params.List {
 		arg, selector, err := getArgDefn(param)
 		if err != nil {
 			return nil, nil, err
+		}
+
+		if arg.Name == "" {
+			arg.Name = fmt.Sprintf("arg%d", i)
 		}
 		if selector != "" {
 			selectors = append(selectors, selector)
@@ -123,10 +134,13 @@ func getMethodDefn(m *ast.Field) (*MethodDefn, []string, error) {
 	}
 
 	if fnType.Results != nil {
-		for _, result := range fnType.Results.List {
+		for i, result := range fnType.Results.List {
 			arg, selector, err := getArgDefn(result)
 			if err != nil {
 				return nil, nil, err
+			}
+			if arg.Name == "" {
+				arg.Name = fmt.Sprintf("out%d", i)
 			}
 			if selector != "" {
 				selectors = append(selectors, selector)

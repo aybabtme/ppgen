@@ -9,7 +9,9 @@ import (
 )
 
 // NopThing returns a Thing that does nothing.
-func NopThing() Thing { return nopThing{} }
+func NopThing() Thing {
+	return nopThing{}
+}
 
 type nopThing struct{}
 
@@ -24,15 +26,19 @@ func (nopThing) MyFunction2(_ context.Context, _ string, _ int, _ Composite, _ *
 }
 
 // MyFunction3 does shits.
-func (nopThing) MyFunction3(_ context.Context, _ string, _ int, _ Composite, _ *Composite) (out0 string, out1 int, out2 Composite, out3 *Composite, out4 oldctx.Context, out5 error) {
+func (nopThing) MyFunction3(_ context.Context, _ string, _ int, _ Composite, _ *Composite) (str string, i int, comp Composite, comptr *Composite, ctx oldctx.Context, err error) {
 	return
 }
 
 // MyFunction4 does shits.
-func (nopThing) MyFunction4()                      {}
-func (nopThing) MyFunction5()                      {}
-func (nopThing) MyFunction6()                      {}
-func (nopThing) MyFunction7()                      {}
-func (nopThing) MyFunction8(_ string) (out0 error) { return }
-func (nopThing) MyFunction9(_ string)              {}
-func (nopThing) MyFunction10() (out0 error)        { return }
+func (nopThing) MyFunction4() {}
+func (nopThing) MyFunction5() {}
+func (nopThing) MyFunction6() {}
+func (nopThing) MyFunction7() {}
+func (nopThing) MyFunction8(_ string) (out0 error) {
+	return
+}
+func (nopThing) MyFunction9(_ string) {}
+func (nopThing) MyFunction10() (out0 error) {
+	return
+}

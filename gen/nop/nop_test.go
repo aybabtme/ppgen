@@ -47,8 +47,8 @@ func TestGenerate(t *testing.T) {
 			}
 
 			if want, got := want, out.Bytes(); !bytes.Equal(want, got) {
-				t.Errorf("want=\n%q", string(want))
-				t.Errorf(" got=\n%q", string(got))
+				t.Errorf("want=\n%s", string(want))
+				t.Errorf(" got=\n%s", string(got))
 			}
 
 			if want, got := wantTest, outTest.Bytes(); !bytes.Equal(want, got) {
