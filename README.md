@@ -1,10 +1,21 @@
 # ppgen
 
-## ppgen nop -type Thing -src my_thing.go
+## `ppgen nop -type Thing -src my_thing.go`
 
 Generate an implementation of `Thing` that does nothing.
 
-## ppgen interceptor -type Thing -src my_thing.go
+[Example](./example):
+```go
+//go:generate ppgen nop -type UserDB -src db.go
+
+type UserDB interface {
+	Create(name string) (*User, error)
+	Get(id string) (u *User, ok bool, err error)
+	Delete(*User) error
+}
+```
+
+## `ppgen interceptor -type Thing -src my_thing.go`
 
 Generates a type that allows intercepting calls to an underlying interface. The callbacks will tell you what function
 is being invoked and give you a chance to override the error being returned.
