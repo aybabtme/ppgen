@@ -154,6 +154,7 @@ func getFuncDefn(m *ast.Field) (*FuncDefn, []string, error) {
 type ArgDefn struct {
 	Name     string
 	TypeName string
+	Nullable bool
 }
 
 func getArgDefn(field *ast.Field) (*ArgDefn, string, error) {
@@ -161,27 +162,28 @@ func getArgDefn(field *ast.Field) (*ArgDefn, string, error) {
 	if len(field.Names) == 1 {
 		name = field.Names[0].Name
 	}
-	tn, selector, err := getTypeName(field.Type)
+	tn, selector, nullable, err := getTypeName(field.Type)
 	if err != nil {
 		return nil, selector, err
 	}
 	return &ArgDefn{
 		Name:     name,
 		TypeName: tn,
+		Nullable: nullable,
 	}, selector, nil
 }
 
-func getTypeName(expr ast.Expr) (name, selector string, err error) {
+func getTypeName(expr ast.Expr) (name, selector string, nullable bool, err error) {
 	switch xt := expr.(type) {
 	case *ast.SelectorExpr:
-		pkgName, _, err := getTypeName(xt.X)
-		return pkgName + "." + xt.Sel.Name, pkgName, err
+		pkgName, _, nullable, err := getTypeName(xt.X)
+		return pkgName + "." + xt.Sel.Name, pkgName, nullable, err
 	case *ast.Ident:
-		return xt.Name, "", nil
+		return xt.Name, "", false, nil
 	case *ast.StarExpr:
-		name, pkg, err := getTypeName(xt.X)
-		return "*" + name, pkg, err
+		name, pkg, _, err := getTypeName(xt.X)
+		return "*" + name, pkg, true, err
 	default:
-		return "", "", fmt.Errorf("not a valid ast expression: %T", expr)
+		return "", "", false, fmt.Errorf("not a valid ast expression: %T", expr)
 	}
 }

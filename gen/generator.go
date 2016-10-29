@@ -29,17 +29,20 @@ func (g *FileGenerator) WritePkgName() {
 	fmt.Fprintf(g.w, "package %s\n", g.pkgName)
 }
 
-func (g *FileGenerator) WriteImports() {
+func (g *FileGenerator) WriteEmptyLine() {
+	fmt.Fprintf(g.w, "\n")
+}
+
+func (g *FileGenerator) WriteImports(extra ...string) {
 	fmt.Fprintf(g.w, "\n")
 
-	if len(g.imports) == 1 {
+	if len(g.imports)+len(extra) == 1 {
 		fmt.Fprintf(g.w, "import ")
 	} else {
 		fmt.Fprintf(g.w, "import (\n")
 	}
 
 	for _, impSpec := range g.imports {
-
 		path := impSpec.Path.Value
 		if impSpec.Name != nil {
 			alias := impSpec.Name.Name
@@ -47,6 +50,10 @@ func (g *FileGenerator) WriteImports() {
 		} else {
 			fmt.Fprintf(g.w, "\t%s\n", path)
 		}
+	}
+
+	for _, pkg := range extra {
+		fmt.Fprintf(g.w, "\t%q\n", pkg)
 	}
 
 	if len(g.imports) == 1 {
@@ -137,9 +144,29 @@ func (g *FileGenerator) WriteIfaceImpl(def *IfaceDefn, name string, fields []str
 type FuncGenerator struct {
 	w   io.Writer
 	def *FuncDefn
+
+	firstWrite string
+	manyWrites bool
 }
 
-func (g *FuncGenerator) Inline(code string) {
+func (g *FuncGenerator) Inline(format string, args ...interface{}) {
+	if g.firstWrite == "" && !g.manyWrites {
+		g.firstWrite = fmt.Sprintf(format, args...)
+		return
+	} else if g.firstWrite != "" && !g.manyWrites {
+		fmt.Fprintf(g.w, "\n\t%s\n", g.firstWrite)
+		g.manyWrites = true
+	}
 
-	fmt.Fprintf(g.w, "\n\t%s\n", code)
+	fmt.Fprintf(g.w, "\t%s\n", fmt.Sprintf(format, args...))
+}
+
+func (g *FuncGenerator) Return(results []ArgDefn) {
+	fmt.Fprintf(g.w, "return")
+	for i, arg := range results {
+		if i != 0 {
+			fmt.Fprintf(g.w, ",")
+		}
+		fmt.Fprintf(g.w, " %s", arg.Name)
+	}
 }

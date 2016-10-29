@@ -3,16 +3,25 @@
 
 package testdata
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 func TestNopThing(t *testing.T) {
 	tests := []struct {
 		name  string
 		check func(Thing)
 	}{
-		{name: "MyFunction", check: func(thing Thing) { thing.MyFunction(nil, "", 0, Composite{}, nil) }},
-		{name: "MyFunction2", check: func(thing Thing) { thing.MyFunction2(nil, "", 0, Composite{}, nil) }},
-		{name: "MyFunction3", check: func(thing Thing) { thing.MyFunction3(nil, "", 0, Composite{}, nil) }},
+		{name: "MyFunction", check: func(thing Thing) {
+			thing.MyFunction(func() (out context.Context) { return out }(), "", 0, func() (out Composite) { return out }(), nil)
+		}},
+		{name: "MyFunction2", check: func(thing Thing) {
+			thing.MyFunction2(func() (out context.Context) { return out }(), "", 0, func() (out Composite) { return out }(), nil)
+		}},
+		{name: "MyFunction3", check: func(thing Thing) {
+			thing.MyFunction3(func() (out context.Context) { return out }(), "", 0, func() (out Composite) { return out }(), nil)
+		}},
 		{name: "MyFunction4", check: func(thing Thing) { thing.MyFunction4() }},
 		{name: "MyFunction5", check: func(thing Thing) { thing.MyFunction5() }},
 		{name: "MyFunction6", check: func(thing Thing) { thing.MyFunction6() }},
