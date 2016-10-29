@@ -4,7 +4,7 @@
 
 Generate an implementation of `Thing` that does nothing.
 
-[Example](./example):
+[Example](./example/nop_user_db.go):
 ```go
 //go:generate ppgen nop -type UserDB -src db.go
 
