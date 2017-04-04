@@ -33,4 +33,6 @@ type Thing interface {
 	MyFunction10() error
 
 	MyFunction11(a, b string) (c, d string, err error)
+
+	MyFunction12(fn func(int) bool) func(int) bool
 }

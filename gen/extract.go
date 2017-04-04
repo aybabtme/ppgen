@@ -209,6 +209,8 @@ func getTypeName(expr ast.Expr) (name string, selector []string, nullable bool, 
 	case *ast.SelectorExpr:
 		pkgName, pkgs, nullable, err := getTypeName(xt.X)
 		return pkgName + "." + xt.Sel.Name, append(pkgs, pkgName), nullable, err
+	case *ast.FuncType:
+		return getFuncTypeName(xt)
 	case *ast.Ident:
 		return xt.Name, nil, false, nil
 	case *ast.StarExpr:
@@ -224,4 +226,44 @@ func getTypeName(expr ast.Expr) (name string, selector []string, nullable bool, 
 	default:
 		return "", nil, false, fmt.Errorf("not a valid ast expression: %T", expr)
 	}
+}
+
+func getFuncTypeName(xt *ast.FuncType) (name string, selector []string, nullable bool, err error) {
+	funcName := "func("
+	for i, param := range xt.Params.List {
+		if i != 0 {
+			funcName += ", "
+		}
+		arg, pkgs, _, err := getTypeName(param.Type)
+		if err != nil {
+			return "", nil, true, err
+		}
+		funcName += arg
+		selector = append(selector, pkgs...)
+	}
+	funcName += ")"
+	switch xt.Results.NumFields() {
+	case 0:
+	case 1:
+		funcName += " "
+	default:
+		funcName += " ("
+	}
+	for i, res := range xt.Results.List {
+		if i != 0 {
+			funcName += ", "
+		}
+		arg, pkgs, _, err := getTypeName(res.Type)
+		if err != nil {
+			return "", nil, true, err
+		}
+		funcName += arg
+		selector = append(selector, pkgs...)
+	}
+	switch xt.Results.NumFields() {
+	case 0, 1:
+	default:
+		funcName += ")"
+	}
+	return funcName, selector, false, nil
 }

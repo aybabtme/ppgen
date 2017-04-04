@@ -9,6 +9,7 @@ package testdata
 
 import (
 	"context"
+
 	oldctx "golang.org/x/net/context"
 )
 
@@ -41,3 +42,4 @@ func (nopThing) MyFunction8(_ string) (out0 error)                              
 func (nopThing) MyFunction9(_ string)                                            {}
 func (nopThing) MyFunction10() (out0 error)                                      { return out0 }
 func (nopThing) MyFunction11(_ string, _ string) (c string, d string, err error) { return c, d, err }
+func (nopThing) MyFunction12(_ func(int) bool) (out0 func(int) bool)             { return out0 }
