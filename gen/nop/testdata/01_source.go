@@ -31,4 +31,6 @@ type Thing interface {
 	MyFunction8(string) error
 	MyFunction9(string)
 	MyFunction10() error
+
+	MyFunction11(a, b string) (c, d string, err error)
 }

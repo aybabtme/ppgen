@@ -33,6 +33,7 @@ func TestNopThing(t *testing.T) {
 		{name: "MyFunction8", check: func(thing Thing) { thing.MyFunction8("") }},
 		{name: "MyFunction9", check: func(thing Thing) { thing.MyFunction9("") }},
 		{name: "MyFunction10", check: func(thing Thing) { thing.MyFunction10() }},
+		{name: "MyFunction11", check: func(thing Thing) { thing.MyFunction11("", "") }},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -33,10 +33,11 @@ func (nopThing) MyFunction3(_ context.Context, _ string, _ int, _ Composite, _ *
 }
 
 // MyFunction4 does shits.
-func (nopThing) MyFunction4()                      {}
-func (nopThing) MyFunction5()                      {}
-func (nopThing) MyFunction6()                      {}
-func (nopThing) MyFunction7()                      {}
-func (nopThing) MyFunction8(_ string) (out0 error) { return out0 }
-func (nopThing) MyFunction9(_ string)              {}
-func (nopThing) MyFunction10() (out0 error)        { return out0 }
+func (nopThing) MyFunction4()                                                    {}
+func (nopThing) MyFunction5()                                                    {}
+func (nopThing) MyFunction6()                                                    {}
+func (nopThing) MyFunction7()                                                    {}
+func (nopThing) MyFunction8(_ string) (out0 error)                               { return out0 }
+func (nopThing) MyFunction9(_ string)                                            {}
+func (nopThing) MyFunction10() (out0 error)                                      { return out0 }
+func (nopThing) MyFunction11(_ string, _ string) (c string, d string, err error) { return c, d, err }

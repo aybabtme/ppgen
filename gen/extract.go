@@ -119,33 +119,36 @@ func getFuncDefn(m *ast.Field) (*FuncDefn, []string, error) {
 	}
 	var selectors []string
 	for i, param := range fnType.Params.List {
-		arg, selector, err := getArgDefn(param)
+		args, selector, err := getArgDefn(param)
 		if err != nil {
 			return nil, nil, err
 		}
-
-		if arg.Name == "" {
-			arg.Name = fmt.Sprintf("arg%d", i)
-		}
-		if len(selector) != 0 {
-			selectors = append(selectors, selector...)
-		}
-		method.Params = append(method.Params, *arg)
-	}
-
-	if fnType.Results != nil {
-		for i, result := range fnType.Results.List {
-			arg, selector, err := getArgDefn(result)
-			if err != nil {
-				return nil, nil, err
-			}
+		for _, arg := range args {
 			if arg.Name == "" {
-				arg.Name = fmt.Sprintf("out%d", i)
+				arg.Name = fmt.Sprintf("arg%d", i)
 			}
 			if len(selector) != 0 {
 				selectors = append(selectors, selector...)
 			}
-			method.Results = append(method.Results, *arg)
+			method.Params = append(method.Params, *arg)
+		}
+	}
+
+	if fnType.Results != nil {
+		for i, result := range fnType.Results.List {
+			args, selector, err := getArgDefn(result)
+			if err != nil {
+				return nil, nil, err
+			}
+			for _, arg := range args {
+				if arg.Name == "" {
+					arg.Name = fmt.Sprintf("out%d", i)
+				}
+				if len(selector) != 0 {
+					selectors = append(selectors, selector...)
+				}
+				method.Results = append(method.Results, *arg)
+			}
 		}
 	}
 	return method, selectors, nil
@@ -157,7 +160,35 @@ type ArgDefn struct {
 	Nullable bool
 }
 
-func getArgDefn(field *ast.Field) (*ArgDefn, []string, error) {
+func getArgDefn(field *ast.Field) ([]*ArgDefn, []string, error) {
+	var (
+		argDefns  []*ArgDefn
+		selectors []string
+	)
+	switch len(field.Names) {
+	case 0, 1:
+		return getArgDefnSingle(field)
+	default:
+		// continue
+	}
+
+	for _, name := range field.Names {
+		tn, selector, nullable, err := getTypeName(field.Type)
+		selectors = append(selectors, selector...)
+		if err != nil {
+			return argDefns, selectors, err
+		}
+		argDefns = append(argDefns, &ArgDefn{
+			Name:     name.Name,
+			TypeName: tn,
+			Nullable: nullable,
+		})
+	}
+
+	return argDefns, selectors, nil
+}
+
+func getArgDefnSingle(field *ast.Field) ([]*ArgDefn, []string, error) {
 	var name string
 	if len(field.Names) == 1 {
 		name = field.Names[0].Name
@@ -166,11 +197,11 @@ func getArgDefn(field *ast.Field) (*ArgDefn, []string, error) {
 	if err != nil {
 		return nil, selector, err
 	}
-	return &ArgDefn{
+	return []*ArgDefn{{
 		Name:     name,
 		TypeName: tn,
 		Nullable: nullable,
-	}, selector, nil
+	}}, selector, nil
 }
 
 func getTypeName(expr ast.Expr) (name string, selector []string, nullable bool, err error) {
